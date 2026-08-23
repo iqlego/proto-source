@@ -26,8 +26,8 @@ void initMatrices() {
     mxL.begin();
     mxR.begin();
   
-    mxL.control(MD_MAX72XX::INTENSITY, g.brightnessLevel);
-    mxR.control(MD_MAX72XX::INTENSITY, g.brightnessLevel);
+    mxL.control(MD_MAX72XX::INTENSITY, s.brightnessLevel);
+    mxR.control(MD_MAX72XX::INTENSITY, s.brightnessLevel);
 }
 
 void renderFace() {
@@ -68,8 +68,8 @@ void renderFace() {
     mxL.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
     mxR.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 
-    mxL.control(MD_MAX72XX::INTENSITY, g.brightnessLevel);
-    mxR.control(MD_MAX72XX::INTENSITY, g.brightnessLevel);
+    mxL.control(MD_MAX72XX::INTENSITY, s.brightnessLevel);
+    mxR.control(MD_MAX72XX::INTENSITY, s.brightnessLevel);
     updateBlinkSequence();
 }
 

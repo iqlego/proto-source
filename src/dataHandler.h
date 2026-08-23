@@ -1,9 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <Preferences.h>
 
 typedef struct {
-    int brightnessLevel = 0;
 
     float blushLevel = 0; // percent
     int blushLevelPWM = 0;
@@ -14,6 +14,15 @@ typedef struct {
     bool isBoop = false;
 } globals;
 
+typedef struct {
+    int brightnessLevel = 0;
+    int currentExpression = 0;
+
+} settings;
+
 extern globals g;
+extern settings s;
 
 void updateData();
+void saveSettings();
+void loadSettings();

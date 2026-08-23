@@ -132,8 +132,8 @@ void handleInput(int src, int listMax)
 
     if (onLed && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_BRIGHTNESS)
     {
-        if (src == ROLE_UP) g.brightnessLevel = clamp(g.brightnessLevel + 1, 0, 15);
-        else if (src == ROLE_DOWN) g.brightnessLevel = clamp(g.brightnessLevel - 1, 0, 15);
+        if (src == ROLE_UP) {s.brightnessLevel = clamp(s.brightnessLevel + 1, 0, 15); saveSettings();}
+        else if (src == ROLE_DOWN) {s.brightnessLevel = clamp(s.brightnessLevel - 1, 0, 15); saveSettings();}
         else if (src == ROLE_SELECT) g_LedSettingsScreenMode = LedSettingsScreenMode::LIST; // confirm value, drop back to list nav ADD COMMAND HERE
         lastInputTime = millis();
         return;

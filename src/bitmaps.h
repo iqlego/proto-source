@@ -107,8 +107,13 @@ const uint8_t eyeL_dead1[16] = { // TODO: create mirror of ts for r eye
   0x28, 0x44, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8_t* eyeFramesL[] = {eyeL, eyeL_1, eye_confused, eye_flustered, eyeL_dead1};
-static const uint8_t* eyeFramesR[] = {eyeR, eyeR_1, eye_confused, eye_flustered, eyeL_dead1};
+const uint8_t eye_spiral[16] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x38, 0x44, 0x92,
+  0xAA, 0xA2, 0x9C, 0x41, 0x3E, 0x00, 0x00, 0x00
+};
+
+static const uint8_t* eyeFramesL[] = {eyeL, eyeL_1, eye_confused, eye_flustered, eyeL_dead1, eye_spiral};
+static const uint8_t* eyeFramesR[] = {eyeR, eyeR_1, eye_confused, eye_flustered, eyeL_dead1, eye_spiral};
 
 // 
 
