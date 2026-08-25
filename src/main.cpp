@@ -1,6 +1,5 @@
 // TODO: implement telemetry reading
-//       what version of cpp is this gng
-//       implement global handler for settings to call when updating with target and value e.g updateSettings("brightness", 2); upon UI request
+//       implement bluetooth handler
 
 #include <MD_MAX72xx.h>
 #include <SPI.h>
