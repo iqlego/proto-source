@@ -95,4 +95,8 @@ extern const char* clockStyleList[];
 extern const uint8_t* clockStyleFont[];
 extern const char* expressionList[];
 
+int drawIncrementRow(int rowSlot, int value, bool selected, int topOffset);
+int drawTogglePillRow(int rowSlot, bool value, bool selected, int topOffset, const char* onLabel = "ON", const char* offLabel = "OFF");
+void drawListPopup(const char** items, int itemCount, int selIndex, int x = 10, int y = 10, int w = 108, int h = 44, int rowH = 12);
+
 void screenSwitch(Screen screen);

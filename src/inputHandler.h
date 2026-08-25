@@ -6,6 +6,7 @@
 #include "tools.h"
 
 // LIST is when you are only scrolling, not modifying a value
+enum class HomeScreenMode : int {LIST, EXPRESSION_POPUP};
 enum class LedSettingsScreenMode : int {LIST, EDIT_BRIGHTNESS, EXPRESSION_POPUP, EDIT_ISVOICEDETECTION};
 enum class StyleSettingsScreenMode : int {LIST, EDIT_ISTOPBARENABLED};
 enum class ClockMode : int {STD, BMP, SEG};
@@ -20,6 +21,7 @@ extern SettingsScreen g_currentSettingsScreen;
 extern LedSettingsScreenMode g_LedSettingsScreenMode;
 extern StyleSettingsScreenMode g_StyleSettingsScreenMode;
 extern ClockMode g_clockMode;
+extern HomeScreenMode g_HomeScreenMode;
 
 constexpr int BTN_INDEX_L = 32;
 constexpr int BTN_MIDDLE_L = 33;

@@ -22,6 +22,7 @@ SettingsScreen g_currentSettingsScreen = SettingsScreen::ROOT;
 LedSettingsScreenMode g_LedSettingsScreenMode = LedSettingsScreenMode::LIST; // sets the active enum index to not be changing any settings
 StyleSettingsScreenMode g_StyleSettingsScreenMode = StyleSettingsScreenMode::LIST;
 ClockMode g_clockMode = ClockMode::STD;
+HomeScreenMode g_HomeScreenMode = HomeScreenMode::LIST;
 
 int g_expressionSelIndex = 0;
 bool g_isVoiceDetection = false;
@@ -171,6 +172,21 @@ void handleInput(int src, int listMax)
         return;
     }
 
+    bool onHome = (g_currentScreen == Screen::HOME);
+
+    if (onHome && g_HomeScreenMode == HomeScreenMode::EXPRESSION_POPUP)
+    {
+        if (src == ROLE_UP) g_expressionSelIndex = clamp(g_expressionSelIndex + 1, 0, expressionCount - 1);
+        else if (src == ROLE_DOWN) g_expressionSelIndex = clamp(g_expressionSelIndex - 1, 0, expressionCount - 1);
+        else if (src == ROLE_SELECT) {
+            g_HomeScreenMode = HomeScreenMode::LIST;
+            currentEyeExpression = g_expressionSelIndex;
+            renderFace();
+        }
+        lastInputTime = millis();
+        return;
+    }
+
     if (src == ROLE_UP) {
         selIndex = clamp(selIndex + 1, 0, getMaxScreenIndex(g_currentScreen));
     } else if (src == ROLE_DOWN) {
@@ -192,7 +208,19 @@ void handleInput(int src, int listMax)
                     else if (selIndex == 2) {g_LedSettingsScreenMode = LedSettingsScreenMode::EXPRESSION_POPUP;}
                     else if (selIndex == 3) {g_LedSettingsScreenMode = LedSettingsScreenMode::EDIT_ISVOICEDETECTION;}
                 }
-            } else {
+            }
+            else if (g_currentScreen == Screen::HOME) {
+                if (g_HomeScreenMode == HomeScreenMode::LIST && selIndex == 1) {
+                    g_HomeScreenMode = HomeScreenMode::EXPRESSION_POPUP;
+                } else {
+                    Screen t = getScreenForSelection(g_currentScreen, selIndex);
+                    if (t != g_currentScreen) {
+                        g_currentScreen = t;
+                        selIndex = -1;
+                    }
+                }
+            }
+            else {
                 Screen t = getScreenForSelection(g_currentScreen, selIndex);
                 if (t != g_currentScreen) {
                     g_currentScreen = t;

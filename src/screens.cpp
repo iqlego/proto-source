@@ -753,3 +753,63 @@ void screenSwitch(Screen screen)
         screen_clock_face();
     }
 }
+
+int drawIncrementRow(int rowSlot, int value, bool selected, int topOffset) {
+    String buf = "-   " + String(value) + "   +";
+    return drawListRow(rowSlot, buf.c_str(), selected, topOffset);
+}
+
+int drawTogglePillRow(int rowSlot, bool value, bool selected, int topOffset, const char* onLabel, const char* offLabel) {
+    int textY = drawListRow(rowSlot, "", selected, topOffset); // reserve slot, draw nothing
+    const int glyphW = 12;
+    const int gap = u8g2.getStrWidth("      ");
+
+    u8g2.setFont(u8g2_font_7x13_tr);
+    int onW = u8g2.getStrWidth(onLabel);
+    int offW = u8g2.getStrWidth(offLabel);
+    int blockW = glyphW + onW + gap + glyphW + offW;
+    int cx = (rectW - blockW) / 2;
+
+    u8g2.setDrawColor(selected ? 0 : 1);
+
+    u8g2.setFont(u8g2_font_7x13_t_symbols);
+    u8g2.drawGlyph(cx, textY, value ? 0x25CF : 0x25CB);
+    cx += glyphW;
+    u8g2.setFont(u8g2_font_7x13_tr);
+    u8g2.drawStr(cx, textY, onLabel);
+    cx += onW + gap;
+
+    u8g2.setFont(u8g2_font_7x13_t_symbols);
+    u8g2.drawGlyph(cx, textY, !value ? 0x25CF : 0x25CB);
+    cx += glyphW;
+    u8g2.setFont(u8g2_font_7x13_tr);
+    u8g2.drawStr(cx, textY, offLabel);
+
+    u8g2.setDrawColor(1);
+    return textY;
+}
+
+void drawListPopup(const char** items, int itemCount, int selIndex, int x, int y, int w, int h, int rowH) {
+    int visible = h / rowH;
+    u8g2.setDrawColor(0);
+    u8g2.drawBox(x, y, w, h);
+    u8g2.setDrawColor(1);
+    u8g2.drawRFrame(x, y, w, h, 4);
+
+    int scrollTop = clamp(selIndex - visible / 2, 0, itemCount - visible);
+    for (int i = 0; i < visible; i++) {
+        int idx = scrollTop + i;
+        if (idx >= itemCount) break;
+        int rowTop = y + 2 + i * rowH;
+        int ty = rowTop + 9;
+        bool sel = (idx == selIndex);
+        if (sel) {
+            u8g2.drawBox(x + 2, rowTop, w - 4, rowH - 1);
+            u8g2.setDrawColor(0);
+            u8g2.drawStr(x + 6, ty + 1, items[idx]);
+            u8g2.setDrawColor(1);
+        } else {
+            u8g2.drawStr(x + 6, ty, items[idx]);
+        }
+    }
+}

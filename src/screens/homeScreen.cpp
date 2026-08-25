@@ -3,13 +3,20 @@
 #include <timer.h>
 #include "homeScreen.h"
 
+// TODO: add a thing where you can switch between list and grid layout
+
 extern U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2;
+
+
+
+
 
 void screen_home(bool isAudioPass, int co2, int fan, int hum)
 {
     if (selIndex >= 0 && (millis() - lastInputTime >= 5000))
     {
         selIndex = -1;
+        g_HomeScreenMode = HomeScreenMode::LIST;
         
     }
 
@@ -46,6 +53,8 @@ void screen_home(bool isAudioPass, int co2, int fan, int hum)
         bool selected = (selIndex == row.idx);
         drawListRow(i, row.label, selected, topOffset);
     }
+
+    if (g_HomeScreenMode == HomeScreenMode::EXPRESSION_POPUP) drawListPopup(expressionList, expressionCount, g_expressionSelIndex);
 
     drawScrollArrows(scrollTop, rowCount, visRows, topOffset, 64 - bottomReserved);
 

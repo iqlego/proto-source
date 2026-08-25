@@ -122,58 +122,64 @@ void screen_settings_led()
         ListRow &row = rows[rowIdx];
         bool selected = (selIndex == row.idx);
 
-        String buf;
-        const char *label = row.label;
+        if (row.idx == 1 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_BRIGHTNESS) drawIncrementRow(i, s.brightnessLevel, selected, topOffset);
+
+        else if (row.idx == 3 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_ISVOICEDETECTION) drawTogglePillRow(i, g_isVoiceDetection, selected, topOffset);
+
+        else drawListRow(i, row.label, selected, topOffset);
+
+        // String buf;
+        // const char *label = row.label;
 
         
-        if (row.idx == 1 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_BRIGHTNESS)
-        {
-            buf = "-   " + String(s.brightnessLevel) + "   +";
-            label = buf.c_str();
-        }
+        // if (row.idx == 1 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_BRIGHTNESS)
+        // {
+        //     buf = "-   " + String(s.brightnessLevel) + "   +";
+        //     label = buf.c_str();
+        // }
 
-        if (row.idx == 3 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_ISVOICEDETECTION)
-        {
-            label = ""; // blank out "VOICE DETECTION"; drawn as custom glyph+text block below instead
-        }
+        // if (row.idx == 3 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_ISVOICEDETECTION)
+        // {
+        //     label = ""; // blank out "VOICE DETECTION"; drawn as custom glyph+text block below instead
+        // }
         
 
-        int textY = drawListRow(i, label, selected, topOffset);
+        // int textY = drawListRow(i, label, selected, topOffset);
 
-        if (row.idx == 3 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_ISVOICEDETECTION)
-        {
-            const int glyphW = 12;
-            const char *onStr = "ON";
-            const char *offStr = "OFF";
-            const int gap = u8g2.getStrWidth("      ");
+        // if (row.idx == 3 && g_LedSettingsScreenMode == LedSettingsScreenMode::EDIT_ISVOICEDETECTION)
+        // {
+        //     const int glyphW = 12;
+        //     const char *onStr = "ON";
+        //     const char *offStr = "OFF";
+        //     const int gap = u8g2.getStrWidth("      ");
 
-            u8g2.setFont(u8g2_font_7x13_tr);
-            int onW = u8g2.getStrWidth(onStr);
-            int offW = u8g2.getStrWidth(offStr);
+        //     u8g2.setFont(u8g2_font_7x13_tr);
+        //     int onW = u8g2.getStrWidth(onStr);
+        //     int offW = u8g2.getStrWidth(offStr);
 
-            int blockW = glyphW + onW + gap + glyphW + offW;
-            int cx = (rectW - blockW) / 2;
-            int gy = textY;
+        //     int blockW = glyphW + onW + gap + glyphW + offW;
+        //     int cx = (rectW - blockW) / 2;
+        //     int gy = textY;
 
-            u8g2.setDrawColor(selected ? 0 : 1);
+        //     u8g2.setDrawColor(selected ? 0 : 1);
 
-            u8g2.setFont(u8g2_font_7x13_t_symbols);
-            u8g2.drawGlyph(cx, gy, g_isVoiceDetection ? 0x25CF : 0x25CB);
-            cx += glyphW;
+        //     u8g2.setFont(u8g2_font_7x13_t_symbols);
+        //     u8g2.drawGlyph(cx, gy, g_isVoiceDetection ? 0x25CF : 0x25CB);
+        //     cx += glyphW;
 
-            u8g2.setFont(u8g2_font_7x13_tr);
-            u8g2.drawStr(cx, gy, onStr);
-            cx += onW + gap;
+        //     u8g2.setFont(u8g2_font_7x13_tr);
+        //     u8g2.drawStr(cx, gy, onStr);
+        //     cx += onW + gap;
 
-            u8g2.setFont(u8g2_font_7x13_t_symbols);
-            u8g2.drawGlyph(cx, gy, !g_isVoiceDetection ? 0x25CF : 0x25CB);
-            cx += glyphW;
+        //     u8g2.setFont(u8g2_font_7x13_t_symbols);
+        //     u8g2.drawGlyph(cx, gy, !g_isVoiceDetection ? 0x25CF : 0x25CB);
+        //     cx += glyphW;
 
-            u8g2.setFont(u8g2_font_7x13_tr);
-            u8g2.drawStr(cx, gy, offStr);
+        //     u8g2.setFont(u8g2_font_7x13_tr);
+        //     u8g2.drawStr(cx, gy, offStr);
 
-            u8g2.setDrawColor(1); 
-        }
+        //     u8g2.setDrawColor(1); 
+        // }
 
         // u8g2.setDrawColor(selected ? 0 : 1);
     }
@@ -183,33 +189,34 @@ void screen_settings_led()
     // expression pop up hurrr durrr
     if (g_LedSettingsScreenMode == LedSettingsScreenMode::EXPRESSION_POPUP)
     {
-        const int popX = 10, popY = 10, popW = 108, popH = 44;
-        const int popRowH = 12;
-        const int popVisible = 3;
-        u8g2.setDrawColor(0);
-        u8g2.drawBox(popX, popY, popW, popH);   // clear background under popup
-        u8g2.setDrawColor(1);
-        u8g2.drawRFrame(popX, popY, popW, popH, 4);
-        int popScrollTop = clamp(g_expressionSelIndex - popVisible / 2, 0, expressionCount - popVisible);
-        for (int i = 0; i < popVisible; i++)
-        {
-            int idx = popScrollTop + i;
-            if (idx >= expressionCount) break;
-            int rowTop = popY + 2 + i * popRowH;
-            int y = rowTop + 9;
-            bool sel = (idx == g_expressionSelIndex);
-            if (sel)
-            {
-                u8g2.drawBox(popX + 2, rowTop, popW - 4, popRowH - 1);
-                u8g2.setDrawColor(0);
-                u8g2.drawStr(popX + 6, y + 1, expressionList[idx]);
-                u8g2.setDrawColor(1);
-            }
-            else
-            {
-                u8g2.drawStr(popX + 6, y, expressionList[idx]);
-            }
-        }
+        // const int popX = 10, popY = 10, popW = 108, popH = 44;
+        // const int popRowH = 12;
+        // const int popVisible = 3;
+        // u8g2.setDrawColor(0);
+        // u8g2.drawBox(popX, popY, popW, popH);   // clear background under popup
+        // u8g2.setDrawColor(1);
+        // u8g2.drawRFrame(popX, popY, popW, popH, 4);
+        // int popScrollTop = clamp(g_expressionSelIndex - popVisible / 2, 0, expressionCount - popVisible);
+        // for (int i = 0; i < popVisible; i++)
+        // {
+        //     int idx = popScrollTop + i;
+        //     if (idx >= expressionCount) break;
+        //     int rowTop = popY + 2 + i * popRowH;
+        //     int y = rowTop + 9;
+        //     bool sel = (idx == g_expressionSelIndex);
+        //     if (sel)
+        //     {
+        //         u8g2.drawBox(popX + 2, rowTop, popW - 4, popRowH - 1);
+        //         u8g2.setDrawColor(0);
+        //         u8g2.drawStr(popX + 6, y + 1, expressionList[idx]);
+        //         u8g2.setDrawColor(1);
+        //     }
+        //     else
+        //     {
+        //         u8g2.drawStr(popX + 6, y, expressionList[idx]);
+        //     }
+        // }
+        drawListPopup(expressionList, expressionCount, g_expressionSelIndex);
     }
 
     drawMessagePopup(); 
@@ -230,7 +237,7 @@ void screen_settings_style() {
     u8g2.setFont(u8g2_font_7x13_tr);
 
     ListRow rows[] = {
-        {"< RETURN", 0},
+        {"< RETURN", 0},    
         {"Enable top bar", 0}
     };
     const int rowCount = 2;
