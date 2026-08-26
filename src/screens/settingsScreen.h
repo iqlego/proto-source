@@ -1,7 +1,7 @@
 #pragma once
 
 #include <screens.h>
-#include <inputHandler.h>
+#include <handlers/inputHandler.h>
 #include <timer.h>
 
 

@@ -1,5 +1,5 @@
 #include "dataHandler.h"
-#include "bitmaps.h"
+#include <bitmaps.h>
 globals g;
 settings s;
 Preferences prefs;

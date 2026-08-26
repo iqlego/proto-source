@@ -1,4 +1,4 @@
-#include "inputHandler.h"
+#include "handlers/inputHandler.h"
 #include <Arduino.h>
 #include "bitmaps.h"
 #include "screens.h"
@@ -36,7 +36,9 @@ const int expressionCount = NUM_EYE_EXPRESSIONS; // not starting at 0, total cou
 
 const int buttonPins[NUM_BUTTONS] = { BTN_INDEX_L, BTN_MIDDLE_L, BTN_INDEX_R, BTN_MIDDLE_R };
 ButtonRole buttonRole[NUM_BUTTONS] = { ROLE_UP, ROLE_DOWN, ROLE_SELECT, ROLE_MISC };
-bool buttonLastState[NUM_BUTTONS] = { HIGH, HIGH, HIGH, HIGH };
+bool buttonBoolLastState[NUM_BUTTONS] = { HIGH, HIGH, HIGH, HIGH };
+
+int buttonLastState = -1;
     
 
 void initButtons() {
@@ -44,13 +46,20 @@ void initButtons() {
     pinMode(BTN_BOOP, INPUT_PULLUP);
 }
 
-void pollInputs() {
-    for (int i = 0; i < NUM_BUTTONS; i++) {
-        bool cur = digitalRead(buttonPins[i]);
-        if (buttonLastState[i] == HIGH && cur == LOW) {
-            handleInput(buttonRole[i], getMaxScreenIndex(g_currentScreen));
+void pollInputs() { // refactor this to work with g.buttonState instead of direct digital reads as well. only 1 button press is supported at once
+    if (g.buttonState == -1) {
+        for (int i = 0; i < NUM_BUTTONS; i++) {
+            bool cur = digitalRead(buttonPins[i]);
+            if (buttonBoolLastState[i] == HIGH && cur == LOW) {
+                handleInput(buttonRole[i], getMaxScreenIndex(g_currentScreen));
+            }
+            buttonBoolLastState[i] = cur;
         }
-        buttonLastState[i] = cur;
+    } else {
+        if (buttonLastState == 0 && g.buttonState != 0) {
+            handleInput(g.buttonState, getMaxScreenIndex(g_currentScreen));
+        }
+        buttonLastState = g.buttonState;
     }
     updateBoop(digitalRead(BTN_BOOP));
 //     bool boopCur = digitalRead(BTN_BOOP);

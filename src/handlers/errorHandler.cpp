@@ -2,7 +2,7 @@
 #include "esp32-hal.h"
 #include "soc/soc.h"
 #include "soc/rtc.h"
-#include "errorHandler.h"
+#include "handlers/errorHandler.h"
 
 RTC_DATA_ATTR char g_lastBreadcrumb[32] = "";   // last known-good checkpoint before a crash
 // RTC_NOINIT_ATTR uint32_t g_bootCount;

@@ -17,7 +17,7 @@
 
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 
-#define BLUSH_PIN_R 26 // chagne this duh
+#define BLUSH_PIN_R 26
 
 void renderFace();
 

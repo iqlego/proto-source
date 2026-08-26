@@ -12,6 +12,8 @@ typedef struct {
     int fan = 100;
     int hum = 30;
     bool isBoop = false;
+
+    int buttonState = -1; // disabled until overridden. 0-4 as only 1 press at a time is supported currently
 } globals;
 
 typedef struct {

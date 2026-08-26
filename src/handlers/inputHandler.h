@@ -1,8 +1,8 @@
 #pragma once
 
 #include "screenTypes.h" // Screen enum, ROLE_UP / ROLE_DOWN / ROLE_SELECT constants
-#include "errorHandler.h"
-#include "dataHandler.h"
+#include "handlers/errorHandler.h"
+#include "handlers/dataHandler.h"
 #include "tools.h"
 
 // LIST is when you are only scrolling, not modifying a value
