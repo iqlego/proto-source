@@ -38,7 +38,15 @@ const int buttonPins[NUM_BUTTONS] = { BTN_INDEX_L, BTN_MIDDLE_L, BTN_INDEX_R, BT
 ButtonRole buttonRole[NUM_BUTTONS] = { ROLE_UP, ROLE_DOWN, ROLE_SELECT, ROLE_MISC };
 bool buttonBoolLastState[NUM_BUTTONS] = { HIGH, HIGH, HIGH, HIGH };
 
-int buttonLastState = -1;
+const ButtonRole stateToRole[5] = {
+    ROLE_MISC, // dead slot
+    ROLE_UP,
+    ROLE_DOWN,
+    ROLE_SELECT,
+    ROLE_MISC
+};
+
+// int buttonLastState = -1;
     
 
 void initButtons() {
@@ -47,6 +55,7 @@ void initButtons() {
 }
 
 void pollInputs() { // refactor this to work with g.buttonState instead of direct digital reads as well. only 1 button press is supported at once
+    static int lastButtonState = 0;
     if (g.buttonState == -1) {
         for (int i = 0; i < NUM_BUTTONS; i++) {
             bool cur = digitalRead(buttonPins[i]);
@@ -56,10 +65,10 @@ void pollInputs() { // refactor this to work with g.buttonState instead of direc
             buttonBoolLastState[i] = cur;
         }
     } else {
-        if (buttonLastState == 0 && g.buttonState != 0) {
-            handleInput(g.buttonState, getMaxScreenIndex(g_currentScreen));
+        if (g.buttonState > 0 && lastButtonState == 0) {
+            handleInput(stateToRole[g.buttonState], getMaxScreenIndex(g_currentScreen));
         }
-        buttonLastState = g.buttonState;
+        lastButtonState = g.buttonState;
     }
     updateBoop(digitalRead(BTN_BOOP));
 //     bool boopCur = digitalRead(BTN_BOOP);

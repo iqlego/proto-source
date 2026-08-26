@@ -14,6 +14,10 @@ typedef struct {
     bool isBoop = false;
 
     int buttonState = -1; // disabled until overridden. 0-4 as only 1 press at a time is supported currently
+
+    int lHandBatP = 0;
+    int rHandBatP = 0;
+    int batP = 0;
 } globals;
 
 typedef struct {

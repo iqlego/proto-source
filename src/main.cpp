@@ -35,7 +35,8 @@ void setup() {
     initMatrices();
     initLeds();
 
-    
+    bleHandler.setOnFrameReceived(handleFrame);
+    bleHandler.begin();
 
     renderFace();
     updateLeds();
