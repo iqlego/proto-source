@@ -1,6 +1,7 @@
 // TODO: add toggleable top bar with clock, selectable telemetry (sensors, bt status)
 //       finish all settings options screens & implementation
 //       add functionality to draw screens from their respective files/headers instead of hardcoded into here
+//       add option to draw scroll arrows as either an arrow or filled/hollow triangle (configurable inside the method by checking what the global setting is)
 
 #include "screens.h"
 
