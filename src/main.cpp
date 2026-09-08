@@ -7,6 +7,7 @@
 #include <Wire.h>
 
 #include "bitmaps.h"
+#include "handlers/btHandler.h"
 #include "handlers/dataHandler.h"
 #include "handlers/errorHandler.h"
 #include "handlers/inputHandler.h"
@@ -14,7 +15,6 @@
 #include "screenTypes.h"
 #include "screens.h"
 #include "tools.h"
-#include "handlers/btHandler.h"
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
 
@@ -48,14 +48,6 @@ void setup() {
 }
 
 void loop() {
-    // for (int i = 0; i < NUM_BUTTONS; i++) {
-    //   bool cur = digitalRead(buttonPins[i]);
-    //   if (buttonLastState[i] == HIGH && cur == LOW) {
-    //     handleInput(buttonRole[i], getMaxScreenIndex(g_currentScreen));
-    //   }
-    //   buttonLastState[i] = cur;
-    // }
-
     pollInputs();
 
     screenSwitch(g_currentScreen);

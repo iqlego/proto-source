@@ -10,6 +10,9 @@ class BLEHandlerServerCallbacks : public BLEServerCallbacks {
     void onDisconnect(BLEServer* pServer) override {
         bleHandler.connectedCount--;
         pServer->getAdvertising()->start();
+        if (bleHandler.connectedCount <= 0) {
+            g.buttonState = -1;
+        }
     }
 };
 
@@ -51,7 +54,8 @@ void BLEHandler::begin(const char* deviceName) {
 }
 
 void BLEHandler::notifyAll(const String& payload) {
-    if (pCharacteristic == nullptr) return;
+    if (pCharacteristic == nullptr)
+        return;
     pCharacteristic->setValue(payload.c_str());
     pCharacteristic->notify();
 }
@@ -66,28 +70,28 @@ void BLEHandler::setOnFrameReceived(void (*callback)(const String& frame)) {
     (header, button state [0 all off, 1 or 2 either button], battery as percentage)
 */
 
-char frameHeader = frame[0];
-char buttonValueChar = frame[1];
-
-int buttonValue = buttonValueChar - '0';
-
 int lastLeftButton = 0;
 int lastRightButton = 0;
 
-void setButtonIndex() {
-    bool isLeftHand = frameHeader == 'L' ? true : false;
+void setButtonIndex(char frameHeader, int buttonValue) {
+    bool isLeftHand = (frameHeader == 'L');
     if (isLeftHand && buttonValue != lastLeftButton) {
         lastLeftButton = buttonValue;
         g.buttonState = lastLeftButton;
-    }
-    else if (!isLeftHand && buttonValue != lastRightButton) {
+    } else if (!isLeftHand && buttonValue != lastRightButton) {
         lastRightButton = buttonValue;
         g.buttonState = lastRightButton + 2;
     }
 }
 
-void handleFrame(const String &frame) {
-    if (frameHeader == 'L' || frameHeader == 'R') setButtonIndex();
+void handleFrame(const String& frame) {
+    char frameHeader = frame[0];
+    char buttonValueChar = frame[1];
+    int buttonValue = buttonValueChar - '0';
+
+    if (frameHeader == 'L' || frameHeader == 'R') {
+        setButtonIndex(frameHeader, buttonValue);
+    }
 }
 
 // enum ActiveHandToParse {
@@ -102,19 +106,19 @@ void handleFrame(const String &frame) {
 // char rightVal;
 
 // void setButtonIndex(char id, char val) {
-    
+
 //     // if (id == 'L') {
 //     //     g.buttonState = frame[1] - '0';
 //     // }
 //     // else if (id == 'R') {
-//     //     
+//     //
 //     // }
 //     // else {
 //     //     activeHandToParse = NONE;
 //     // }
 
 //     if (leftVal == 0 && rightVal == 0) g.buttonState == 0;
-    
+
 // }
 
 // void handleFrame(const String &frame) {
