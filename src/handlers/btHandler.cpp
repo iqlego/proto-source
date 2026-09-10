@@ -91,53 +91,15 @@ void handleFrame(const String& frame) {
 
     if (frameHeader == 'L' || frameHeader == 'R') {
         setButtonIndex(frameHeader, buttonValue);
+    } else if (frameHeader == 'P') {
+        // global bt = frame.substring(1);
+        g.fan = frame.substring(2,5).toInt();
     }
 }
 
-// enum ActiveHandToParse {
-//     NONE,
-//     LEFT,
-//     RIGHT
-// };
+// inbound: BT connection status
 
-// ActiveHandToParse activeHandToParse;
-
-// char leftVal;
-// char rightVal;
-
-// void setButtonIndex(char id, char val) {
-
-//     // if (id == 'L') {
-//     //     g.buttonState = frame[1] - '0';
-//     // }
-//     // else if (id == 'R') {
-//     //
-//     // }
-//     // else {
-//     //     activeHandToParse = NONE;
-//     // }
-
-//     if (leftVal == 0 && rightVal == 0) g.buttonState == 0;
-
-// }
-
-// void handleFrame(const String &frame) {
-//     char frameHeader = frame[0];
-//     char buttonValue = frame[1];
-//     // switch(frameHeader) {
-//     //     case 'L': // left hand
-//     //         return;
-//     //     case 'R': // right hand
-//     //         return;
-//     //     case 'P': // phone
-//     //         return;
-//     //     default: // add throw error perchance
-//     //         return;
-//     // }
-//     setButtonIndex(frameHeader, buttonValue);
-// }
-
-// header + helmet battery + l hand battery + r hand battery + current expression index + brightness level
+// outbound: header + helmet battery + l hand battery + r hand battery + current expression index + brightness level
 String createFrame(globals) {
     return "H" + g.batP + g.lHandBatP + g.rHandBatP + s.currentExpression + s.brightnessLevel;
 }
