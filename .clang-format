@@ -11,4 +11,5 @@ ColumnLimit: 0
 AccessModifierOffset: 0
 
 BreakBeforeBraces: Attach
+AlwaysBreakAfterDefinitionReturnType: None
 ...

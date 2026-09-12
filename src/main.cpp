@@ -66,5 +66,8 @@ void loop() {
     }
     wasBlinking = blinkingNow;
 
+    transmitBtPeriodic();
+    scanHandsPeriodic();
+
     delay(10);
 }
