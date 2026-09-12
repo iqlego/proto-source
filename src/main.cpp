@@ -35,8 +35,7 @@ void setup() {
     initMatrices();
     initLeds();
 
-    bleHandler.setOnFrameReceived(handleFrame);
-    bleHandler.begin();
+    initBLE();
 
     renderFace();
     updateLeds();
@@ -66,7 +65,7 @@ void loop() {
     }
     wasBlinking = blinkingNow;
 
-    transmitBtPeriodic();
+    notifyAllPeriodic();
     scanHandsPeriodic();
 
     delay(10);

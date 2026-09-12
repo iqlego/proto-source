@@ -1,141 +1,37 @@
 #include "btHandler.h"
 
-BLEHandler bleHandler;
+#include "NimBLEDevice.h"
 
-class BLEHandlerServerCallbacks : public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) override {
-        bleHandler.connectedCount++;
-        pServer->getAdvertising()->start();
-    }
-    void onDisconnect(BLEServer* pServer) override {
-        if (bleHandler.connectedCount > 0) bleHandler.connectedCount--;
-        pServer->getAdvertising()->start();
-        if (bleHandler.connectedCount <= 0) {
-            g.buttonState = -1;
-        }
-    }
-};
+NimBLECharacteristic* pCharacteristic = nullptr;
+NimBLEServer* pServer = nullptr;
+NimBLEService* pService = nullptr;
 
-class BLEHandlerCharCallbacks : public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic* pChar) override {
-        std::string value = pChar->getValue();
-        if (value.length() > 0) {
-            String frame = String(value.c_str());
-            if (bleHandler.onFrameReceived) {
-                bleHandler.onFrameReceived(frame);
-            } else {
-                Serial.print("[BLE] Frame (no handler set): ");
-                Serial.println(frame);
-            }
-        }
-    }
-};
+NimBLEClient* clientL = nullptr;
+NimBLEClient* clientR = nullptr;
 
-void BLEHandler::begin(const char* deviceName) {
-    BLEDevice::init(deviceName);
+void initBLE() {
+    NimBLEDevice::init("Toast");
 
-    pServer = BLEDevice::createServer();
-    pServer->setCallbacks(new BLEHandlerServerCallbacks());
-
-    BLEService* pService = pServer->createService(SERVICE_UUID);
-
-    pCharacteristic = pService->createCharacteristic(
-        CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ |
-                                 BLECharacteristic::PROPERTY_WRITE |
-                                 BLECharacteristic::PROPERTY_NOTIFY);
-
-    pCharacteristic->setCallbacks(new BLEHandlerCharCallbacks());
-    pCharacteristic->addDescriptor(new BLE2902());
+    pServer = NimBLEDevice::createServer();
+    pService = pServer->createService("ABCD");
+    pCharacteristic = pService->createCharacteristic("1234", NIMBLE_PROPERTY::NOTIFY);
 
     pService->start();
 
-    BLEAdvertising* pAdvertising = pServer->getAdvertising();
-    pAdvertising->addServiceUUID(SERVICE_UUID);
-    pAdvertising->setScanResponse(true);
-    pAdvertising->setMinPreferred(0x06);
+    NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID("ABCD");
+    pAdvertising->setName("Toast");
     pAdvertising->start();
-
-    Serial.println("[BLE] Advertising started");
 }
 
-void BLEHandler::notifyAll(const String& payload) {
-    if (pCharacteristic == nullptr)
-        return;
-    pCharacteristic->setValue(payload.c_str());
-    pCharacteristic->notify();
-}
+unsigned long lastNotify = 0;
 
-void BLEHandler::setOnFrameReceived(void (*callback)(const String& frame)) {
-    onFrameReceived = callback;
-}
-
-struct HandLink {
-    const char* name;
-    BLEClient* client = nullptr;
-    bool connected = false;
-    HandLink(const char* n) : name(n) {}
-};
-
-class HandClientCallbacks : public BLEClientCallbacks {
-    public:
-    HandLink* hand;
-    HandClientCallbacks(HandLink* h) : hand(h) {}
-    void onConnect(BLEClient* pClient) override {}
-    void onDisconnect(BLEClient* pClient) override {
-        hand->connected = false;
+void notifyAllPeriodic() {
+    if (isTimerFinished(lastNotify, 500)) {
+        pCharacteristic->setValue(createFrame());
+        pCharacteristic->notify();
+        lastNotify = millis();
     }
-};
-
-HandLink hands[2] = {
-    {"HAND_L"},
-    {"HAND_R"}};
-
-static void notifyCallback(BLERemoteCharacteristic* pChar, uint8_t* data, size_t length, bool isNotify) {
-    String frame((char*)data, length);
-    handleFrame(frame);
-}
-
-bool connectToHand(HandLink& hand, BLEAdvertisedDevice& device) {
-    hand.client = BLEDevice::createClient();
-    hand.client->setClientCallbacks(new HandClientCallbacks(&hand));
-    if (!hand.client->connect(&device)) return false;
-
-    BLERemoteService* pService = hand.client->getService(HM10_SERVICE_UUID);
-    if (pService == nullptr) {
-        hand.client->disconnect();
-        return false;
-    }
-
-    BLERemoteCharacteristic* pChar = pService->getCharacteristic(HM10_CHAR_UUID);
-    if (pChar == nullptr) {
-        hand.client->disconnect();
-        return false;
-    }
-
-    if (pChar->canNotify()) {
-        pChar->registerForNotify(notifyCallback);
-    }
-
-    hand.connected = true;
-    return true;
-}
-
-static void onScanComplete(BLEScanResults results) {
-    for (int i = 0; i < results.getCount(); i++) {
-        BLEAdvertisedDevice device = results.getDevice(i);
-        for (auto& hand : hands) {
-            if (!hand.connected && device.getName() == hand.name) {
-                connectToHand(hand, device);
-            }
-        }
-    }
-    BLEDevice::getScan()->clearResults();
-}
-
-void scanAndConnectHands() {
-    BLEScan* pScan = BLEDevice::getScan();
-    if (pScan->isScanning()) return;
-    pScan->start(3, onScanComplete, false);
 }
 
 /*
@@ -171,24 +67,78 @@ void handleFrame(const String& frame) {
     }
 }
 
-// inbound: BT connection status
-
-// outbound: header + helmet battery + l hand battery + r hand battery + current expression index + brightness level
 String createFrame() {
     return "H" + String(g.batP) + String(g.lHandBatP) + String(g.rHandBatP) + String(s.currentExpression) + String(s.brightnessLevel);
 }
 
-unsigned long lastFrameSendTime = 0;
-unsigned long lastScanTime = 0;
+void notifyCallback(NimBLERemoteCharacteristic* pChar, uint8_t* data, size_t length, bool isNotify) {
+    String frame((char*)data, length);
+    handleFrame(frame);
+}
 
-void transmitBtPeriodic() {
-    if (isTimerFinished(lastFrameSendTime, 500)) {
-        bleHandler.notifyAll(createFrame());
-        lastFrameSendTime = millis();
+class HandDisconnectCallback : public NimBLEClientCallbacks {
+    NimBLEClient** slot;
+
+    public:
+    HandDisconnectCallback(NimBLEClient** s) : slot(s) {}
+    virtual void onDisconnect(NimBLEClient* pClient, int reason) override {
+        *slot = nullptr;
+    }
+};
+
+bool connectAndSubscribe(const NimBLEAdvertisedDevice* device, NimBLEClient*& outClient, void (*cb)(NimBLERemoteCharacteristic*, uint8_t*, size_t, bool)) {
+    NimBLEClient* client = NimBLEDevice::createClient();
+
+    if (!client->connect(device)) {
+        NimBLEDevice::deleteClient(client);
+        return false;
+    }
+
+    NimBLERemoteService* pSvc = client->getService(HM10_SERVICE_UUID);
+    if (!pSvc) {
+        client->disconnect();
+        return false;
+    }
+
+    NimBLERemoteCharacteristic* pChar = pSvc->getCharacteristic(HM10_CHAR_UUID);
+    if (!pChar || !pChar->canNotify()) {
+        client->disconnect();
+        return false;
+    }
+
+    if (!pChar->subscribe(true, cb)) {
+        client->disconnect();
+        return false;
+    }
+
+    client->setClientCallbacks(new HandDisconnectCallback(&outClient));
+    outClient = client;
+    return true;
+}
+
+void onScanComplete(NimBLEScanResults results) {
+    for (int i = 0; i < results.getCount(); i++) {
+        const NimBLEAdvertisedDevice* device = results.getDevice(i);
+
+        if (clientL == nullptr && device->getName() == "TOASTLPAW") {
+            connectAndSubscribe(device, clientL, notifyCallback);
+        }
+        if (clientR == nullptr && device->getName() == "TOASTRPAW") {
+            connectAndSubscribe(device, clientR, notifyCallback);
+        }
     }
 }
 
+unsigned long lastScanTime = 0;
+
+void scanAndConnectHands() {
+    NimBLEScan* pScan = NimBLEDevice::getScan();
+    if (pScan->isScanning()) return;
+    pScan->start(3, onScanComplete, false);
+}
+
 void scanHandsPeriodic() {
+    if (clientL != nullptr && clientR != nullptr) return;
     if (isTimerFinished(lastScanTime, 5000)) {
         scanAndConnectHands();
         lastScanTime = millis();
